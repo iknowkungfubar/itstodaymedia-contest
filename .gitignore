@@ -1,0 +1,88 @@
+# Agentic/AI artifacts — never commit
+CLAUDE.md
+AGENTS.md
+SOUL.md
+RULES.md
+.claude/
+.cursor/
+.cursorrules
+.aider*
+.aide*
+.windsurfrules
+.copilot*
+.github/copilot-instructions.md
+.prompt.md
+.history/
+.session/
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/
+yarn-error.log
+.pnpm-store/
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+*.coverage.*
+.tox/
+uv.lock
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.tsbuildinfo
+*.tsbuildinfo
+target/
+*.bak
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+*.orig
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+*.code-workspace
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# Runtime
+.pid
+.pid.lock
