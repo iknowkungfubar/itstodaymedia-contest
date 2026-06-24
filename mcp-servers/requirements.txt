@@ -1,0 +1,2 @@
+taboola>=0.1.0
+tiktok-business>=0.1.0

@@ -1,6 +1,10 @@
 # Agentic/AI artifacts — never commit
 CLAUDE.md
+**/CLAUDE.md
 AGENTS.md
+**/AGENTS.md
+build-prompt.txt
+prompt.txt
 SOUL.md
 RULES.md
 .claude/
@@ -33,6 +37,8 @@ yarn-error.log
 
 # Python
 __pycache__/
+*.db
+*.sqlite3
 *.py[cod]
 *.egg-info/
 *.egg
