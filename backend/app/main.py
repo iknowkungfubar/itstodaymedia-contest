@@ -397,6 +397,7 @@ from app.routes.campaigns import router as campaigns_router  # noqa: E402
 from app.routes.creatives import router as creatives_router  # noqa: E402
 from app.routes.insights import router as insights_router  # noqa: E402
 from app.routes.landing_pages import router as landing_pages_router  # noqa: E402
+from app.routes.mcp import router as mcp_router  # noqa: E402
 from app.routes.platforms import router as platforms_router  # noqa: E402
 
 app.include_router(campaigns_router)
@@ -405,6 +406,7 @@ app.include_router(platforms_router)
 app.include_router(budget_router)
 app.include_router(landing_pages_router)
 app.include_router(insights_router)
+app.include_router(mcp_router)
 
 
 @app.get("/api/health")
