@@ -21,9 +21,15 @@ export function PlatformBreakdownCard({
   platform: string;
   data: PlatformBreakdown;
 }) {
-  const color = getPlatformColor(platform).replace("text-", "");
-  const bgClass = `bg-${color.split("-")[0]}-50`;
-  const textClass = `text-${color.split("-")[0]}-600`;
+  const colorMap: Record<string, { bg: string; text: string }> = {
+    meta: { bg: "bg-blue-50", text: "text-blue-600" },
+    google: { bg: "bg-green-50", text: "text-green-600" },
+    taboola: { bg: "bg-purple-50", text: "text-purple-600" },
+    tiktok: { bg: "bg-cyan-50", text: "text-cyan-600" },
+  };
+  const colors = colorMap[platform] ?? { bg: "bg-gray-50", text: "text-gray-600" };
+  const bgClass = colors.bg;
+  const textClass = colors.text;
 
   return (
     <Card className="p-4">

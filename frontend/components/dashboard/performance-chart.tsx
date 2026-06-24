@@ -10,10 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import type { CampaignSummary } from "@/lib/types";
-import { getPlatformLabel } from "@/lib/utils";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TooltipFormatter = (value: any) => [string, undefined];
+import { formatCurrency, getPlatformLabel } from "@/lib/utils";
 
 export function PerformanceChart({
   summary,
@@ -52,10 +49,10 @@ export function PerformanceChart({
             tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
           />
           <Tooltip
-            formatter={((value: number) => [
-              `$${value.toLocaleString()}`,
+            formatter={(value) => [
+              typeof value === "number" ? formatCurrency(value) : String(value),
               undefined,
-            ]) as TooltipFormatter}
+            ]}
             contentStyle={{
               borderRadius: "8px",
               border: "1px solid #e5e7eb",

@@ -12,6 +12,7 @@ Exposes three endpoints:
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import UTC, datetime
 from typing import Any
@@ -40,7 +41,7 @@ _PLATFORM_TYPE_MAP: dict[str, str] = {
 _PLATFORM_TO_SERVER: dict[str, str] = {v: k for k, v in _PLATFORM_TYPE_MAP.items()}
 
 
-def _normalise_status(raw: str) -> str:
+def _normalize_status(raw: str) -> str:
     """Convert MCP status strings to CampaignModel status values."""
     upper = raw.upper()
     if upper in ("ACTIVE", "ENABLED"):
@@ -83,27 +84,43 @@ async def call_mcp_tool(server_name: str, body: dict[str, Any]) -> dict[str, Any
     if not tool_name:
         raise HTTPException(status_code=400, detail="Field 'name' is required")
 
+    if mcp_manager.get_server(server_name) is None:
+        raise HTTPException(status_code=404, detail=f"Unknown MCP server: {server_name}")
+
     response = await mcp_manager.call_tool(server_name, tool_name, arguments)
 
     if response.error:
-        raise HTTPException(status_code=400, detail=response.error)
+        raise HTTPException(status_code=502, detail=response.error)
 
     return response.result or {}
 
 
 @router.post("/sync")
 async def mcp_sync(db: DbSession) -> dict[str, Any]:
-    """Pull campaign data from all connected MCP ad platforms.
+    """Pull campaign data from all connected MCP ad-platform servers.
 
-    Iterates each platform in the database that has ``is_connected=True``,
-    locates its corresponding MCP server, calls ``list_campaigns``, and
+    This is the **production sync path**.  For each connected platform
+    it calls the corresponding MCP server's ``list_campaigns`` tool and
     upserts the returned campaigns into the local database.
-    Returns per-platform sync results.
+
+    For development / demo mock-data generation, use
+    ``POST /api/campaigns/sync`` instead.
+
+    Note
+    ----
+    This endpoint mixes async (MCP tool calls) and sync (SQLAlchemy) I/O.
+    The DB operations are offloaded to a thread executor so they don't block
+    the event loop under concurrent load.
     """
-    platforms = (
-        db.query(AdPlatformModel)
-        .filter(AdPlatformModel.is_connected == True)  # noqa: E712
-        .all()
+    loop = asyncio.get_event_loop()
+
+    platforms = await loop.run_in_executor(
+        None,
+        lambda: (
+            db.query(AdPlatformModel)
+            .filter(AdPlatformModel.is_connected == True)  # noqa: E712
+            .all()
+        ),
     )
 
     if not platforms:
@@ -120,11 +137,12 @@ async def mcp_sync(db: DbSession) -> dict[str, Any]:
             continue  # no MCP server for Taboola / TikTok yet
 
         try:
-            response = await mcp_manager.call_tool(
-                server_name,
-                "list_campaigns",
-                {},
-            )
+            async with asyncio.timeout(30):
+                response = await mcp_manager.call_tool(
+                    server_name,
+                    "list_campaigns",
+                    {},
+                )
         except Exception as exc:  # pragma: no cover
             logger.exception("MCP tool call failed for %s", server_name)
             sync_results.append(_error_result(platform, str(exc)))
@@ -134,18 +152,25 @@ async def mcp_sync(db: DbSession) -> dict[str, Any]:
             sync_results.append(_error_result(platform, response.error))
             continue
 
-        campaigns_data = (response.result or {}).get("campaigns", [])
+        # Defensive: handle both flat {campaigns: [...]} and
+        # nested {data: {campaigns: [...]}} response structures.
+        result = response.result or {}
+        campaigns_data = result.get("campaigns") or (result.get("data") or {}).get("campaigns", [])
         synced_count = 0
 
         for camp_data in campaigns_data:
-            synced_count += _upsert_campaign(db, platform.platform_type, camp_data)
+            try:
+                synced_count += _upsert_campaign(
+                    db, platform.platform_type, camp_data
+                )
+            except Exception:
+                logger.exception("Failed to upsert campaign for %s", server_name)
 
-        if synced_count > 0:
-            db.commit()
+        await loop.run_in_executor(None, db.commit)
 
         # Stamp the platform's last-sync timestamp.
         platform.last_sync_at = datetime.now(UTC)
-        db.commit()
+        await loop.run_in_executor(None, db.commit)
 
         sync_results.append(
             {
@@ -200,7 +225,7 @@ def _upsert_campaign(
     if existing:
         # Update mutable fields.
         if "status" in camp_data:
-            existing.status = _normalise_status(camp_data["status"])
+            existing.status = _normalize_status(camp_data["status"])
         if "daily_budget" in camp_data:
             existing.daily_budget = float(camp_data["daily_budget"])
         return 0  # update, not a new insert
@@ -209,7 +234,7 @@ def _upsert_campaign(
         name=str(camp_data.get("name", f"Synced {platform_campaign_id}")),
         platform=platform_type,
         platform_campaign_id=platform_campaign_id,
-        status=_normalise_status(camp_data.get("status", "")),
+        status=_normalize_status(camp_data.get("status", "")),
         daily_budget=float(camp_data.get("daily_budget", 0)),
     )
     db.add(campaign)

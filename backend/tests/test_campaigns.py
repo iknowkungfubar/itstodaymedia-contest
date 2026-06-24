@@ -133,3 +133,14 @@ class TestCampaigns:
         assert data["active_campaigns"] == 2
         assert data["total_spent"] == 300.0
         assert "by_platform" in data
+
+    def test_summary_zero_campaigns(self, client: TestClient) -> None:
+        """GET /api/campaigns/summary handles zero campaigns without division by zero."""
+        response = client.get("/api/campaigns/summary")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_campaigns"] == 0
+        assert data["overall_roas"] == 0
+        assert data["overall_ctr"] == 0
+        assert data["overall_cpa"] == 0
+        assert data["by_platform"] == {}

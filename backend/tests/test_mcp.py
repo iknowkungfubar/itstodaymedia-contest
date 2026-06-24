@@ -116,12 +116,12 @@ class TestMCPToolErrors:
     """Error handling for tool calls."""
 
     def test_unknown_server(self, client: TestClient) -> None:
-        """Calling a non-existent server returns 400."""
+        """Calling a non-existent server returns 404."""
         response = client.post(
             "/api/mcp/servers/nonexistent/tools/call",
             json={"name": "list_campaigns", "arguments": {}},
         )
-        assert response.status_code == 400
+        assert response.status_code == 404
         assert "nonexistent" in response.json()["detail"]
 
     def test_missing_tool_name(self, client: TestClient) -> None:
@@ -134,12 +134,12 @@ class TestMCPToolErrors:
         assert "name" in response.json()["detail"].lower()
 
     def test_unknown_tool(self, client: TestClient) -> None:
-        """Calling a non-existent tool returns 400."""
+        """Calling a non-existent tool returns 502 (Bad Gateway)."""
         response = client.post(
             "/api/mcp/servers/meta-ads/tools/call",
             json={"name": "do_nothing", "arguments": {}},
         )
-        assert response.status_code == 400
+        assert response.status_code == 502
 
 
 class TestMCPSync:
@@ -191,8 +191,8 @@ class TestMCPSync:
         campaigns = db_session.query(CampaignModel).all()
         assert len(campaigns) > 0
 
-        # The meta-ads mock returns 3 campaigns, google-ads returns 3 => at least 6
-        assert len(campaigns) >= 6
+        # meta-ads mock returns 3, google-ads mock returns 3
+        assert len(campaigns) == 6
 
         # Verify the platform_campaign_id was stored
         meta_campaigns = (

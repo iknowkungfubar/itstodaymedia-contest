@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 
 from app.database import DbSession
 from app.models.creative import CreativeModel
+from app.rate_limit import limiter
 from app.schemas.creative import (
     CreativeAnalysisRequest,
     CreativeAnalysisResponse,
@@ -80,7 +81,8 @@ def delete_creative(creative_id: int, db: DbSession):
 
 
 @router.post("/analyze", response_model=list[CreativeAnalysisResponse])
-def analyze_creatives(data: CreativeAnalysisRequest, db: DbSession):
+@limiter.limit("10/minute")
+def analyze_creatives(request: Request, data: CreativeAnalysisRequest, db: DbSession):  # noqa: ARG001
     """Analyze creatives using AI for performance prediction."""
     creatives = db.query(CreativeModel).filter(
         CreativeModel.id.in_(data.creative_ids)
@@ -106,6 +108,9 @@ def analyze_creatives(data: CreativeAnalysisRequest, db: DbSession):
         # Save analysis results to the creative
         creative.ai_score = analysis["ai_score"]
         creative.ai_analysis = analysis.get("analysis_text", "")
+        creative.strengths = analysis.get("strengths", [])
+        creative.weaknesses = analysis.get("weaknesses", [])
+        creative.recommendations = analysis.get("recommendations", [])
         db.add(creative)
 
         results.append(

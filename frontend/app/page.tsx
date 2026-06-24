@@ -34,21 +34,25 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const [summaryData, insightsData] = await Promise.all([
-          fetchCampaignSummary(),
-          fetchInsights({ limit: 5 }),
-        ]);
+  function load() {
+    setLoading(true);
+    setError(null);
+    Promise.all([
+      fetchCampaignSummary(),
+      fetchInsights({ limit: 5 }),
+    ])
+      .then(([summaryData, insightsData]) => {
         setSummary(summaryData);
         setInsights(insightsData.items);
-      } catch (err) {
+      })
+      .catch((err) => {
         setError(err instanceof Error ? err.message : "Failed to load data");
-      } finally {
-        setLoading(false);
-      }
-    })();
+      })
+      .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    load();
   }, []);
 
   if (loading) {
@@ -70,7 +74,7 @@ export default function DashboardPage() {
           <Button
             className="mt-4"
             variant="outline"
-            onClick={() => window.location.reload()}
+            onClick={() => load()}
           >
             Retry
           </Button>

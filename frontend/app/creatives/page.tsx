@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Sparkles, FileText } from "lucide-react";
 import {
   Card,
@@ -21,7 +21,7 @@ export default function CreativesPage() {
     new Map()
   );
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -33,12 +33,11 @@ export default function CreativesPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
-  }, []);
+  }, [load]);
 
   async function handleAnalyze() {
     const ids = creatives.map((c) => c.id);

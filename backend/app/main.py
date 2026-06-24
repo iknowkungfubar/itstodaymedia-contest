@@ -13,11 +13,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.auth import verify_api_key_middleware
 from app.config import settings
 from app.database import engine
 from app.models import Base
+from app.rate_limit import limiter
 from app.seed_data import seed_demo_data
 
 logging.basicConfig(
@@ -25,6 +29,18 @@ logging.basicConfig(
     format="%(asctime)s  %(levelname)-8s %(name)s  %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+
+class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
+    """Reject requests larger than 1 MB."""
+
+    async def dispatch(self, request: Request, call_next):
+        content_length = request.headers.get("content-length")
+        if content_length and int(content_length) > 1024 * 1024:  # 1 MB
+            return JSONResponse(
+                status_code=413, content={"detail": "Request too large"}
+            )
+        return await call_next(request)
 
 
 @asynccontextmanager
@@ -44,6 +60,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # CORS
 origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
 if origins and "*" in origins:
@@ -58,14 +78,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(RequestSizeLimitMiddleware)
 
 
 # --- Authentication middleware ---
 # Exempt /api/health from API key checks
 @app.middleware("http")
 async def authenticate_request(request: Request, call_next) -> JSONResponse:
-    """Validate API key on all routes except /api/health."""
+    """Validate API key on all routes except /api/health and OPTIONS preflight."""
     if request.url.path == "/api/health":
+        return await call_next(request)
+
+    # Exempt CORS preflight (browsers don't send Authorization on OPTIONS)
+    if request.method == "OPTIONS":
         return await call_next(request)
 
     # Extract token from Authorization header

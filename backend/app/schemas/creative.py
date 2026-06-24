@@ -10,7 +10,7 @@ class CreativeBase(BaseModel):
 
     headline: str = Field(..., min_length=1, max_length=500)
     body: str | None = None
-    image_url: str | None = None
+    image_url: str | None = Field(None, max_length=1000)
     cta: str | None = None
     cta_type: str | None = None
 
@@ -48,6 +48,9 @@ class CreativeResponse(CreativeBase):
     ctr: float | None = None
     ai_score: float | None = None
     ai_analysis: str | None = None
+    strengths: list[str] | None = None
+    weaknesses: list[str] | None = None
+    recommendations: list[str] | None = None
     created_at: datetime.datetime
 
     model_config = {"from_attributes": True}

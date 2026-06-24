@@ -1,10 +1,12 @@
 # Backend
 FROM python:3.12-slim AS backend
 WORKDIR /app/backend
+RUN groupadd -r campaignpulse && useradd -r -g campaignpulse campaignpulse
 COPY backend/requirements-prod.txt .
 RUN pip install --no-cache-dir -r requirements-prod.txt
 COPY backend/app/ ./app/
 EXPOSE 8000
+USER campaignpulse
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # Frontend

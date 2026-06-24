@@ -32,22 +32,26 @@ export default function LandingPagesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const [pagesData, summaryData] = await Promise.all([
-          fetchLandingPages(),
-          fetchLandingPageSummary(),
-        ]);
+  function load() {
+    setLoading(true);
+    setError(null);
+    Promise.all([
+      fetchLandingPages(),
+      fetchLandingPageSummary(),
+    ])
+      .then(([pagesData, summaryData]) => {
         setPages(pagesData);
         setSummary(summaryData);
-      } catch (err) {
+      })
+      .catch((err) => {
         console.error("Failed to load landing pages:", err);
         setError(err instanceof Error ? err.message : "Failed to load data");
-      } finally {
-        setLoading(false);
-      }
-    })();
+      })
+      .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    load();
   }, []);
 
   if (error) {
@@ -58,7 +62,7 @@ export default function LandingPagesPage() {
           <Button
             className="mt-4"
             variant="outline"
-            onClick={() => window.location.reload()}
+            onClick={() => load()}
           >
             Retry
           </Button>

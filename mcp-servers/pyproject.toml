@@ -1,0 +1,10 @@
+[project]
+name = "campaignpulse-mcp-servers"
+version = "0.1.0"
+description = "MCP ad-platform server implementations for CampaignPulse"
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.backends._legacy:_Backend"

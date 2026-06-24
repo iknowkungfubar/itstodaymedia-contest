@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, Float, Integer, String, func
+from sqlalchemy import DateTime, Float, Integer, Numeric, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -25,15 +25,15 @@ class CampaignModel(Base):
     status: Mapped[str] = mapped_column(
         String(50), default="active", comment="active, paused, completed, archived"
     )
-    daily_budget: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
-    total_budget: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
-    spent: Mapped[Decimal] = mapped_column(Float, default=0.0)
+    daily_budget: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    total_budget: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    spent: Mapped[Decimal] = mapped_column(Numeric(12, 4), default=0.0)
     impressions: Mapped[int] = mapped_column(Integer, default=0)
     clicks: Mapped[int] = mapped_column(Integer, default=0)
     conversions: Mapped[int] = mapped_column(Integer, default=0)
-    cpa: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
+    cpa: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
     roas: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
-    revenue: Mapped[Decimal] = mapped_column(Float, default=0.0)
+    revenue: Mapped[Decimal] = mapped_column(Numeric(12, 4), default=0.0)
     ctr: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
     start_date: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
     end_date: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)

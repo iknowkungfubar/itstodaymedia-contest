@@ -19,20 +19,21 @@ export default function BudgetPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const result = await fetchBudgetRecommendations();
-        setData(result);
-      } catch (err) {
-        console.error("Failed to load budget recommendations:", err);
-        setError(err instanceof Error ? err.message : "Failed to load data");
-      } finally {
-        setLoading(false);
-      }
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await fetchBudgetRecommendations();
+      setData(result);
+    } catch (err) {
+      console.error("Failed to load budget recommendations:", err);
+      setError(err instanceof Error ? err.message : "Failed to load data");
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     load();
   }, []);
 
@@ -56,7 +57,7 @@ export default function BudgetPage() {
             <Button
               className="mt-4"
               variant="outline"
-              onClick={() => window.location.reload()}
+              onClick={() => load()}
             >
               Retry
             </Button>

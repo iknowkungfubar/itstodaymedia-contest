@@ -54,6 +54,11 @@ class PlatformSyncService:
 
     def _generate_mock_campaigns(self, platform_type: str, db: Session) -> int:
         """Generate mock campaigns for demonstration purposes."""
+        supported_platforms = {"meta", "google", "taboola", "tiktok"}
+        if platform_type not in supported_platforms:
+            logger.warning("Unsupported platform type: %s", platform_type)
+            return 0
+
         platform_names = {
             "meta": "Meta Ads",
             "google": "Google Ads",
@@ -106,32 +111,36 @@ class PlatformSyncService:
             revenue = spent * template["roas"]
             ctr = (clicks / impressions * 100) if impressions > 0 else 0
 
-            campaign = CampaignModel(
-                name=template["name"],
-                platform=platform_type,
-                status=random.choice(["active", "active", "active", "paused"]),
-                daily_budget=random.uniform(50, 500),
-                total_budget=random.uniform(1000, 10000),
-                spent=float(spent),
-                impressions=impressions,
-                clicks=clicks,
-                conversions=conversions,
-                cpa=float(template["cpa"]),
-                roas=float(template["roas"]),
-                revenue=float(revenue),
-                ctr=float(ctr),
-                start_date=datetime.now(UTC) - timedelta(days=random.randint(7, 60)),
-            )
-            db.add(campaign)
-            db.flush()
+            try:
+                campaign = CampaignModel(
+                    name=template["name"],
+                    platform=platform_type,
+                    status=random.choice(["active", "active", "active", "paused"]),
+                    daily_budget=random.uniform(50, 500),
+                    total_budget=random.uniform(1000, 10000),
+                    spent=float(spent),
+                    impressions=impressions,
+                    clicks=clicks,
+                    conversions=conversions,
+                    cpa=float(template["cpa"]),
+                    roas=float(template["roas"]),
+                    revenue=float(revenue),
+                    ctr=float(ctr),
+                    start_date=datetime.now(UTC) - timedelta(days=random.randint(7, 60)),
+                )
+                db.add(campaign)
+                db.flush()
 
-            # Generate mock creatives
-            self._generate_mock_creatives(campaign, platform_type, db)
+                # Generate mock creatives
+                self._generate_mock_creatives(campaign, platform_type, db)
 
-            # Generate mock landing pages
-            self._generate_mock_landing_pages(campaign, platform_type, db)
+                # Generate mock landing pages
+                self._generate_mock_landing_pages(campaign, platform_type, db)
 
-            count += 1
+                count += 1
+            except Exception:
+                db.rollback()
+                logger.exception("Failed to generate mock data for campaign '%s'", template["name"])
 
         db.commit()
         return count

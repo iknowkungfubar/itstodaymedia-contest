@@ -145,22 +145,22 @@ def seed_demo_data() -> None:
         seed_campaigns = _seed_campaigns(db, campaigns_data)
 
         # --- Creatives ---
-        _seed_creatives(db, seed_campaigns)
+        creative_count = _seed_creatives(db, seed_campaigns)
 
         # --- Landing Pages ---
-        _seed_landing_pages(db, seed_campaigns)
+        landing_page_count = _seed_landing_pages(db, seed_campaigns)
 
         # --- Insights ---
-        _seed_insights(db, seed_campaigns)
+        insight_count = _seed_insights(db, seed_campaigns)
 
         db.commit()
         logger.info(
             "Seeded %d campaigns, %d creatives, %d landing pages, %d insights, %d platforms",
             len(seed_campaigns),
-            8,
-            len(seed_campaigns) * 2,
-            6,
-            4,
+            creative_count,
+            landing_page_count,
+            insight_count,
+            len(platforms_data),
         )
 
     finally:
@@ -208,8 +208,8 @@ def _seed_campaigns(db, campaigns_data: list[dict]) -> list[CampaignModel]:
     return seed_campaigns
 
 
-def _seed_creatives(db, campaigns: list[CampaignModel]) -> None:
-    """Create creative records for the first 4 campaigns."""
+def _seed_creatives(db, campaigns: list[CampaignModel]) -> int:
+    """Create creative records for the first 4 campaigns. Returns count created."""
     creative_data = [
         {
             "headline": "Get Your Free Marketing Guide Now",
@@ -223,6 +223,7 @@ def _seed_creatives(db, campaigns: list[CampaignModel]) -> None:
         },
     ]
 
+    count = 0
     for idx, campaign in enumerate(campaigns[:4]):
         for _ in range(2):
             tmpl = creative_data[idx % len(creative_data)]
@@ -249,10 +250,13 @@ def _seed_creatives(db, campaigns: list[CampaignModel]) -> None:
                 ai_score=round(0.5 + (idx * 0.1), 2),
             )
             db.add(creative)
+            count += 1
+
+    return count
 
 
-def _seed_landing_pages(db, campaigns: list[CampaignModel]) -> None:
-    """Create landing page records for the first 6 campaigns."""
+def _seed_landing_pages(db, campaigns: list[CampaignModel]) -> int:
+    """Create landing page records for the first 6 campaigns. Returns count created."""
     landing_page_urls = [
         "https://example.com/affiliate-guide",
         "https://example.com/free-trial",
@@ -260,6 +264,7 @@ def _seed_landing_pages(db, campaigns: list[CampaignModel]) -> None:
         "https://example.com/demo-request",
     ]
 
+    count = 0
     for campaign in campaigns[:6]:
         for url in landing_page_urls[:2]:
             visits = int(campaign.clicks * 0.8)
@@ -282,10 +287,13 @@ def _seed_landing_pages(db, campaigns: list[CampaignModel]) -> None:
                 avg_time_on_page=round(120 + (conversions / visits) * 100, 2),
             )
             db.add(lp)
+            count += 1
+
+    return count
 
 
-def _seed_insights(db, campaigns: list[CampaignModel]) -> None:
-    """Create insight/recommendation/anomaly records."""
+def _seed_insights(db, campaigns: list[CampaignModel]) -> int:
+    """Create insight/recommendation/anomaly records. Returns count created."""
     insights_data = [
         {
             "type": "insight",
@@ -373,3 +381,5 @@ def _seed_insights(db, campaigns: list[CampaignModel]) -> None:
     for insight in insights_data:
         ins = InsightModel(**insight)
         db.add(ins)
+
+    return len(insights_data)

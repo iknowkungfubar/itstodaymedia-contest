@@ -57,12 +57,27 @@ class MCPServerManager:
         the request — the credentials check is intended for production use
         once real API integration is added.
         """
+        # ── WARNING about mock credentials ──────────────────────────────
+        # When credentials are empty the MCP servers return mock data.
+        # This is intentional for development / demo mode, but MUST be
+        # addressed before connecting to real ad platforms by setting the
+        # corresponding environment variables.
+        if not settings.meta_ads_access_token:
+            logger.warning(
+                "META_ADS_ACCESS_TOKEN is not set — Meta Ads MCP server "
+                "will return mock data only"
+            )
         meta = MetaAdsMCPServer(
             access_token=settings.meta_ads_access_token or "mock_token",
             ad_account_id=settings.meta_ads_ad_account_id or "mock_ad_account",
         )
         self._servers["meta-ads"] = meta
 
+        if not settings.google_ads_developer_token:
+            logger.warning(
+                "Google Ads credentials are not set — Google Ads MCP server "
+                "will return mock data only"
+            )
         google = GoogleAdsMCPServer(
             developer_token=settings.google_ads_developer_token or "mock_dev_token",
             client_id=settings.google_ads_client_id or "mock_client_id",

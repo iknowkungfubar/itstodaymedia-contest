@@ -4,6 +4,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import desc
+from sqlalchemy import func as sa_func
 
 from app.database import DbSession
 from app.models.campaign import CampaignModel
@@ -57,33 +58,63 @@ def list_campaigns(
 
 @router.get("/summary", response_model=dict)
 def get_campaign_summary(db: DbSession):
-    """Get aggregate campaign statistics across all platforms."""
-    campaigns = db.query(CampaignModel).all()
+    """Get aggregate campaign statistics across all platforms.
 
-    total_impressions = sum(c.impressions for c in campaigns)
-    total_clicks = sum(c.clicks for c in campaigns)
-    total_conversions = sum(c.conversions for c in campaigns)
-    total_spent = sum(float(c.spent) for c in campaigns)
-    total_revenue = sum(float(c.revenue) for c in campaigns)
-    active = sum(1 for c in campaigns if c.status == "active")
+    Uses SQL aggregation functions to avoid loading every row into Python
+    memory — O(1) queries regardless of table size.
+    """
+    from app.models.campaign import CampaignModel
 
-    # Platform breakdown
-    platforms: dict[str, dict] = {}
-    for c in campaigns:
-        if c.platform not in platforms:
-            platforms[c.platform] = {
-                "impressions": 0, "clicks": 0, "conversions": 0,
-                "spent": 0.0, "revenue": 0.0, "count": 0,
-            }
-        platforms[c.platform]["impressions"] += c.impressions
-        platforms[c.platform]["clicks"] += c.clicks
-        platforms[c.platform]["conversions"] += c.conversions
-        platforms[c.platform]["spent"] += float(c.spent)
-        platforms[c.platform]["revenue"] += float(c.revenue)
-        platforms[c.platform]["count"] += 1
+    # ── Totals (single aggregation query) ────────────────────────────────
+    totals = db.query(
+        sa_func.count(CampaignModel.id),
+        sa_func.sum(CampaignModel.impressions),
+        sa_func.sum(CampaignModel.clicks),
+        sa_func.sum(CampaignModel.conversions),
+        sa_func.sum(CampaignModel.spent),
+        sa_func.sum(CampaignModel.revenue),
+    ).one()
+
+    total_campaigns = totals[0] or 0
+    total_impressions = totals[1] or 0
+    total_clicks = totals[2] or 0
+    total_conversions = totals[3] or 0
+    total_spent = float(totals[4] or 0)
+    total_revenue = float(totals[5] or 0)
+    active = (
+        db.query(sa_func.count(CampaignModel.id))
+        .filter(CampaignModel.status == "active")
+        .scalar() or 0
+    )
+
+    # ── Per-platform breakdown (single grouped query) ────────────────────
+    rows = (
+        db.query(
+            CampaignModel.platform,
+            sa_func.count(CampaignModel.id),
+            sa_func.sum(CampaignModel.impressions),
+            sa_func.sum(CampaignModel.clicks),
+            sa_func.sum(CampaignModel.conversions),
+            sa_func.sum(CampaignModel.spent),
+            sa_func.sum(CampaignModel.revenue),
+        )
+        .group_by(CampaignModel.platform)
+        .all()
+    )
+
+    by_platform: dict[str, dict] = {}
+    for row in rows:
+        by_platform[row[0]] = {
+            "count": row[1] or 0,
+            "impressions": row[2] or 0,
+            "clicks": row[3] or 0,
+            "conversions": row[4] or 0,
+            "spent": round(float(row[5] or 0), 2),
+            "revenue": round(float(row[6] or 0), 2),
+        }
 
     return {
-        "total_campaigns": len(campaigns),
+        "total_campaigns": total_campaigns,
         "active_campaigns": active,
         "total_impressions": total_impressions,
         "total_clicks": total_clicks,
@@ -96,17 +127,7 @@ def get_campaign_summary(db: DbSession):
             if total_impressions > 0 else 0
         ),
         "overall_cpa": round(total_spent / total_conversions, 2) if total_conversions > 0 else 0,
-        "by_platform": {
-            p: {
-                "count": data["count"],
-                "impressions": data["impressions"],
-                "clicks": data["clicks"],
-                "conversions": data["conversions"],
-                "spent": round(data["spent"], 2),
-                "revenue": round(data["revenue"], 2),
-            }
-            for p, data in platforms.items()
-        },
+        "by_platform": by_platform,
     }
 
 
@@ -159,7 +180,15 @@ def delete_campaign(campaign_id: int, db: DbSession):
 
 @router.post("/sync", response_model=dict)
 def trigger_sync(db: DbSession):
-    """Trigger a sync across all connected platforms."""
+    """Trigger a mock-data sync across all connected platforms.
+
+    This endpoint uses the :class:`PlatformSyncService` to generate
+    **mock/dev campaign data** for each connected platform.  It is
+    intended for development and demo purposes only.
+
+    For production sync via real MCP ad-platform servers, use the
+    ``POST /api/mcp/sync`` endpoint instead.
+    """
     from app.models.ad_platform import AdPlatformModel
 
     platforms = db.query(AdPlatformModel).filter(

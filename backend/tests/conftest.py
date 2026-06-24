@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from collections.abc import Generator
 
 import pytest
@@ -8,11 +9,29 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.database import get_db
-from app.main import app as _app
-from app.models import Base
-
+# ═══════════════════════════════════════════════════════════════════════
+# IMPORTANT: Set the test DB URL *before* importing app modules so the
+# app-level engine uses the test database, not production.  This prevents
+# the lifespan handler (Base.metadata.create_all + seed_demo_data) from
+# touching the production database.
+# ═══════════════════════════════════════════════════════════════════════
 TEST_DATABASE_URL = "sqlite:///./test_campaignpulse.db"
+os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+
+# ── Prevent the lifespan from seeding demo data during tests ─────────
+import app.main as _app_mod  # noqa: E402
+from app.database import get_db  # noqa: E402
+from app.models import Base  # noqa: E402
+
+_app = _app_mod.app
+
+
+def _noop_seed() -> None:
+    """Swap in a no-op seed so the lifespan doesn't pollute test DB."""
+
+
+_app_mod.seed_demo_data = _noop_seed
+
 _test_engine = create_engine(
     TEST_DATABASE_URL,
     connect_args={"check_same_thread": False},

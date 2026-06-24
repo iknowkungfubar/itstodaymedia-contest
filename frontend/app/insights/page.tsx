@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, Bell, Info, Lightbulb, TrendingUp } from "lucide-react";
 import {
   Card,
@@ -14,6 +14,8 @@ import type { Insight } from "@/lib/types";
 import {
   formatDate,
   formatCurrency,
+  formatNumber,
+  formatPercent,
   getPlatformLabel,
   getSeverityColor,
 } from "@/lib/utils";
@@ -41,7 +43,7 @@ export default function InsightsPage() {
   const [typeFilter, setTypeFilter] = useState("");
   const [severityFilter, setSeverityFilter] = useState("");
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await fetchInsights({
@@ -55,12 +57,11 @@ export default function InsightsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [typeFilter, severityFilter]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
-  }, [typeFilter, severityFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load]);
 
   async function handleScan() {
     setScanning(true);
@@ -204,41 +205,58 @@ export default function InsightsPage() {
                         )}
                       </div>
                       {/* Metric values */}
-                      {(insight.current_value !== null ||
-                        insight.previous_value !== null) && (
-                        <div className="mt-3 flex gap-4 text-sm">
-                          {insight.current_value !== null && (
-                            <div>
-                              <span className="text-xs text-gray-400">
-                                Current:{" "}
-                              </span>
-                              <span className="font-mono font-medium text-gray-900">
-                                {formatCurrency(insight.current_value)}
-                              </span>
-                            </div>
-                          )}
-                          {insight.previous_value !== null && (
-                            <div>
-                              <span className="text-xs text-gray-400">
-                                Previous:{" "}
-                              </span>
-                              <span className="font-mono font-medium text-gray-900">
-                                {formatCurrency(insight.previous_value)}
-                              </span>
-                            </div>
-                          )}
-                          {insight.threshold !== null && (
-                            <div>
-                              <span className="text-xs text-gray-400">
-                                Threshold:{" "}
-                              </span>
-                              <span className="font-mono font-medium text-gray-900">
-                                {formatCurrency(insight.threshold)}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      {(() => {
+                        const metricName = insight.metric_name;
+                        const label =
+                          metricName
+                            ? metricName.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+                            : "Value";
+
+                        function formatMetricValue(value: number): string {
+                          const pctMetrics = ["ctr", "conversion_rate", "bounce_rate", "engagement_rate"];
+                          const countMetrics = ["impressions", "clicks", "conversions", "reach", "frequency"];
+                          if (pctMetrics.includes(metricName ?? "")) return formatPercent(value);
+                          if (countMetrics.includes(metricName ?? "")) return formatNumber(value);
+                          return formatCurrency(value);
+                        }
+
+                        return (insight.current_value !== null ||
+                          insight.previous_value !== null ||
+                          insight.threshold !== null) ? (
+                          <div className="mt-3 flex gap-4 text-sm">
+                            {insight.current_value !== null && (
+                              <div>
+                                <span className="text-xs text-gray-400">
+                                  Current {label}:{" "}
+                                </span>
+                                <span className="font-mono font-medium text-gray-900">
+                                  {formatMetricValue(insight.current_value)}
+                                </span>
+                              </div>
+                            )}
+                            {insight.previous_value !== null && (
+                              <div>
+                                <span className="text-xs text-gray-400">
+                                  Previous {label}:{" "}
+                                </span>
+                                <span className="font-mono font-medium text-gray-900">
+                                  {formatMetricValue(insight.previous_value)}
+                                </span>
+                              </div>
+                            )}
+                            {insight.threshold !== null && (
+                              <div>
+                                <span className="text-xs text-gray-400">
+                                  Threshold {label}:{" "}
+                                </span>
+                                <span className="font-mono font-medium text-gray-900">
+                                  {formatMetricValue(insight.threshold)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ) : null;
+                      })()}
                       <p className="mt-2 text-xs text-gray-400">
                         {formatDate(insight.created_at)}
                       </p>

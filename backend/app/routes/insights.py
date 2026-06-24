@@ -3,11 +3,12 @@ from __future__ import annotations
 import logging
 from datetime import UTC, datetime, timedelta
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from sqlalchemy.orm import joinedload
 
 from app.database import DbSession
 from app.models.insight import InsightModel
+from app.rate_limit import limiter
 from app.schemas.insight import InsightListResponse, InsightResponse
 from app.services.anomaly_detector import anomaly_detector
 
@@ -47,12 +48,7 @@ def list_insights(
         .all()
     )
 
-    validated = []
-    for item in items:
-        v = InsightResponse.model_validate(item)
-        if item.campaign:
-            v.campaign_name = item.campaign.name
-        validated.append(v)
+    validated = [InsightResponse.model_validate(item) for item in items]
 
     return InsightListResponse(
         items=validated,
@@ -71,14 +67,12 @@ def mark_insight_read(insight_id: int, db: DbSession):
     insight.is_read = True
     db.commit()
     db.refresh(insight)
-    validated = InsightResponse.model_validate(insight)
-    if insight.campaign:
-        validated.campaign_name = insight.campaign.name
-    return validated
+    return InsightResponse.model_validate(insight)
 
 
 @router.post("/scan", response_model=list[InsightResponse])
-def scan_for_anomalies(db: DbSession):
+@limiter.limit("10/minute")
+def scan_for_anomalies(request: Request, db: DbSession):  # noqa: ARG001
     """Run anomaly detection across all active campaigns."""
     logger.info("Running anomaly detection scan...")
     anomalies = anomaly_detector.detect_anomalies(db)
@@ -104,10 +98,7 @@ def scan_for_anomalies(db: DbSession):
         db.flush()
         # Reload to pick up the campaign relationship
         db.refresh(insight)
-        validated = InsightResponse.model_validate(insight)
-        if insight.campaign:
-            validated.campaign_name = insight.campaign.name
-        created_insights.append(validated)
+        created_insights.append(InsightResponse.model_validate(insight))
 
     db.commit()
     logger.info("Detected %d anomalies", len(created_insights))

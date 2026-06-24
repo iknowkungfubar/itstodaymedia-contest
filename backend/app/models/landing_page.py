@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, Numeric, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -24,8 +24,8 @@ class LandingPageModel(Base):
     unique_visits: Mapped[int] = mapped_column(Integer, default=0)
     conversions: Mapped[int] = mapped_column(Integer, default=0)
     conversion_rate: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
-    revenue: Mapped[Decimal] = mapped_column(Float, default=0.0)
-    cost: Mapped[Decimal] = mapped_column(Float, default=0.0)
+    revenue: Mapped[Decimal] = mapped_column(Numeric(12, 4), default=0.0)
+    cost: Mapped[Decimal] = mapped_column(Numeric(12, 4), default=0.0)
     roas: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
     bounce_rate: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
     avg_time_on_page: Mapped[Decimal | None] = mapped_column(Float, nullable=True)

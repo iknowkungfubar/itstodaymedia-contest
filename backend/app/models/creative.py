@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -28,12 +28,15 @@ class CreativeModel(Base):
     impressions: Mapped[int] = mapped_column(Integer, default=0)
     clicks: Mapped[int] = mapped_column(Integer, default=0)
     conversions: Mapped[int] = mapped_column(Integer, default=0)
-    spend: Mapped[Decimal] = mapped_column(Float, default=0.0)
-    cpa: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
+    spend: Mapped[Decimal] = mapped_column(Numeric(12, 4), default=0.0)
+    cpa: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
     roas: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
     ctr: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
     ai_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     ai_analysis: Mapped[str | None] = mapped_column(Text, nullable=True)
+    strengths: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    weaknesses: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    recommendations: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, server_default=func.now()
     )

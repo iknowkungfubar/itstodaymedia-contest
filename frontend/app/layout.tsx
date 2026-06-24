@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { NavSidebar } from "@/components/layout/nav-sidebar";
 import { TopBar } from "@/components/layout/top-bar";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,7 +25,9 @@ export default function RootLayout({
           <NavSidebar />
           <div className="flex flex-1 flex-col">
             <TopBar />
-            <main className="flex-1 p-6 overflow-auto">{children}</main>
+            <main className="flex-1 p-6 overflow-auto">
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </main>
           </div>
         </div>
       </body>

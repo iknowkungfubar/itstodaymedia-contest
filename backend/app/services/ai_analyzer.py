@@ -10,6 +10,7 @@ import json
 import logging
 from typing import Any
 
+import openai
 from openai import OpenAI
 
 from app.config import settings
@@ -23,7 +24,7 @@ class AICreativeAnalyzer:
     def __init__(self) -> None:
         self._client: OpenAI | None = None
         if settings.openai_api_key:
-            self._client = OpenAI(api_key=settings.openai_api_key)
+            self._client = OpenAI(api_key=settings.openai_api_key, timeout=30.0)
 
     def analyze_creative(
         self,
@@ -93,7 +94,7 @@ CTA: {cta or '(none)'}"""
                 "analysis_text": json.dumps(result),
             }
 
-        except Exception as e:
+        except (openai.OpenAIError, json.JSONDecodeError, ValueError) as e:
             logger.warning("AI analysis failed, falling back to heuristic: %s", e)
             return self._analyze_heuristic(headline, body, cta, platform)
 

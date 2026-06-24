@@ -26,7 +26,7 @@ class BudgetOptimizer:
     def __init__(self) -> None:
         self._client: OpenAI | None = None
         if settings.openai_api_key:
-            self._client = OpenAI(api_key=settings.openai_api_key)
+            self._client = OpenAI(api_key=settings.openai_api_key, timeout=30.0)
 
     def get_recommendations(
         self, db: Session, total_budget: float | None = None
@@ -91,7 +91,7 @@ class BudgetOptimizer:
                 ),
                 "rationale": self._generate_rationale(c, score),
                 "expected_impact": self._generate_expected_impact(c, change),
-                "confidence": round(min(abs(score), 0.95), 2),
+                "confidence": round(score, 2),
             }
             recommendations.append(rec)
 

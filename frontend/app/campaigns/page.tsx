@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Megaphone, RefreshCw } from "lucide-react";
 import {
   Card,
@@ -39,7 +39,7 @@ export default function CampaignsPage() {
   const [status, setStatus] = useState("");
   const [syncing, setSyncing] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -57,12 +57,11 @@ export default function CampaignsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [platform, status]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
-  }, [platform, status]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load]);
 
   async function handleSync() {
     setSyncing(true);
