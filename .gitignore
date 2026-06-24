@@ -35,6 +35,18 @@ yarn-error.log
 .env.production.local
 *.local
 
+# Credential files
+*.key
+*.pem
+*.cert
+credentials
+.credentials
+secrets
+*.credentials
+*.secret
+**/secrets/
+**/credentials/
+
 # Python
 __pycache__/
 *.db
