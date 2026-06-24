@@ -12,12 +12,13 @@ services:
     env_file:
       - backend/.env
     volumes:
-      - campaignpulse_data:/app/backend
+      - campaignpulse_data:/app/backend/data
     healthcheck:
-      test: ["GET", "/api/health"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s
 
   frontend:
     build:

@@ -34,12 +34,14 @@ export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [platform, setPlatform] = useState("");
   const [status, setStatus] = useState("");
   const [syncing, setSyncing] = useState(false);
 
   async function load() {
     setLoading(true);
+    setError(null);
     try {
       const data = await fetchCampaigns({
         platform: platform || undefined,
@@ -51,6 +53,7 @@ export default function CampaignsPage() {
       setTotal(data.total);
     } catch (err) {
       console.error("Failed to load campaigns:", err);
+      setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -119,6 +122,19 @@ export default function CampaignsPage() {
           {loading ? (
             <div className="flex h-64 items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            </div>
+          ) : error ? (
+            <div className="flex h-64 items-center justify-center">
+              <div className="text-center">
+                <p className="text-red-600">{error}</p>
+                <Button
+                  className="mt-4"
+                  variant="outline"
+                  onClick={() => load()}
+                >
+                  Retry
+                </Button>
+              </div>
             </div>
           ) : campaigns.length === 0 ? (
             <div className="flex h-64 items-center justify-center text-sm text-gray-500">

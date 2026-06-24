@@ -9,7 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
-import { fetchInsights, scanForAnomalies } from "@/lib/api";
+import { fetchInsights, markInsightRead, scanForAnomalies } from "@/lib/api";
 import type { Insight } from "@/lib/types";
 import {
   formatDate,
@@ -71,6 +71,15 @@ export default function InsightsPage() {
       console.error("Scan failed:", err);
     } finally {
       setScanning(false);
+    }
+  }
+
+  async function handleMarkRead(id: number) {
+    try {
+      await markInsightRead(id);
+      await load();
+    } catch (err) {
+      console.error("Failed to mark insight as read:", err);
     }
   }
 
@@ -170,6 +179,14 @@ export default function InsightsPage() {
                           {insight.severity}
                         </Badge>
                         <Badge variant="outline">{insight.type}</Badge>
+                        {!insight.is_read && (
+                          <button
+                            onClick={() => handleMarkRead(insight.id)}
+                            className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            Mark as read
+                          </button>
+                        )}
                         {insight.platform && (
                           <span className="text-xs text-gray-400">
                             {getPlatformLabel(insight.platform)}

@@ -21,13 +21,6 @@ logger = logging.getLogger(__name__)
 class AnomalyDetector:
     """Detects anomalies in campaign performance metrics."""
 
-    # Threshold multipliers for detecting anomalies (in standard deviations)
-    CTR_THRESHOLD_STD = 2.0
-    CPA_THRESHOLD_STD = 1.5
-    ROAS_THRESHOLD_STD = 1.8
-    SPEND_THRESHOLD_PERCENT = 0.3
-    CONVERSION_DROP_THRESHOLD = 0.4
-
     def detect_anomalies(self, db: Session) -> list[dict[str, Any]]:
         """Run anomaly detection across all active campaigns."""
         anomalies: list[dict[str, Any]] = []

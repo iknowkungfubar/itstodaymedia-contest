@@ -25,7 +25,6 @@ export function PerformanceChart({
       name: getPlatformLabel(platform),
       Spend: values.spent,
       Revenue: values.revenue,
-      Impressions: values.impressions,
     })
   );
 

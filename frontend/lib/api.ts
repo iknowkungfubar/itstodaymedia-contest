@@ -124,6 +124,13 @@ export async function scanForAnomalies() {
   );
 }
 
+export async function markInsightRead(id: number) {
+  return request<import("./types").Insight>(
+    `/api/insights/${id}/read`,
+    { method: "PUT" }
+  );
+}
+
 // Ad Platforms
 export async function fetchPlatforms() {
   return request<import("./types").AdPlatform[]>("/api/platforms");

@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { fetchBudgetRecommendations } from "@/lib/api";
 import type { BudgetRecommendationResponse } from "@/lib/types";
 import { formatCurrency, getPlatformLabel } from "@/lib/utils";
@@ -16,14 +17,18 @@ import { formatCurrency, getPlatformLabel } from "@/lib/utils";
 export default function BudgetPage() {
   const [data, setData] = useState<BudgetRecommendationResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
+      setError(null);
       try {
         const result = await fetchBudgetRecommendations();
         setData(result);
       } catch (err) {
         console.error("Failed to load budget recommendations:", err);
+        setError(err instanceof Error ? err.message : "Failed to load data");
       } finally {
         setLoading(false);
       }
@@ -43,6 +48,19 @@ export default function BudgetPage() {
       {loading ? (
         <div className="flex h-64 items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        </div>
+      ) : error ? (
+        <div className="flex h-64 items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-600">{error}</p>
+            <Button
+              className="mt-4"
+              variant="outline"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
+          </div>
         </div>
       ) : !data || data.recommendations.length === 0 ? (
         <Card>

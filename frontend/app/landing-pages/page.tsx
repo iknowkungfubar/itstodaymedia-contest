@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { fetchLandingPages, fetchLandingPageSummary } from "@/lib/api";
 import type {
   LandingPage,
@@ -29,6 +30,7 @@ export default function LandingPagesPage() {
     null
   );
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -41,11 +43,29 @@ export default function LandingPagesPage() {
         setSummary(summaryData);
       } catch (err) {
         console.error("Failed to load landing pages:", err);
+        setError(err instanceof Error ? err.message : "Failed to load data");
       } finally {
         setLoading(false);
       }
     })();
   }, []);
+
+  if (error) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">{error}</p>
+          <Button
+            className="mt-4"
+            variant="outline"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

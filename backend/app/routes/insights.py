@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, HTTPException, Query
+from sqlalchemy.orm import joinedload
 
 from app.database import DbSession
 from app.models.insight import InsightModel
@@ -39,10 +40,22 @@ def list_insights(
         .count()
     )
 
-    items = query.order_by(InsightModel.created_at.desc()).limit(limit).all()
+    items = (
+        query.options(joinedload(InsightModel.campaign))
+        .order_by(InsightModel.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+
+    validated = []
+    for item in items:
+        v = InsightResponse.model_validate(item)
+        if item.campaign:
+            v.campaign_name = item.campaign.name
+        validated.append(v)
 
     return InsightListResponse(
-        items=[InsightResponse.model_validate(i) for i in items],
+        items=validated,
         total=total,
         unread_count=unread_count,
     )
@@ -58,7 +71,10 @@ def mark_insight_read(insight_id: int, db: DbSession):
     insight.is_read = True
     db.commit()
     db.refresh(insight)
-    return InsightResponse.model_validate(insight)
+    validated = InsightResponse.model_validate(insight)
+    if insight.campaign:
+        validated.campaign_name = insight.campaign.name
+    return validated
 
 
 @router.post("/scan", response_model=list[InsightResponse])
@@ -76,7 +92,7 @@ def scan_for_anomalies(db: DbSession):
                 InsightModel.title == anomaly["title"],
                 InsightModel.campaign_id == anomaly["campaign_id"],
                 InsightModel.created_at
-                >= datetime.now(UTC),  # Same day
+                >= datetime.now(UTC) - timedelta(hours=24),  # Last 24 hours
             )
             .first()
         )
@@ -86,7 +102,12 @@ def scan_for_anomalies(db: DbSession):
         insight = InsightModel(**anomaly)
         db.add(insight)
         db.flush()
-        created_insights.append(InsightResponse.model_validate(insight))
+        # Reload to pick up the campaign relationship
+        db.refresh(insight)
+        validated = InsightResponse.model_validate(insight)
+        if insight.campaign:
+            validated.campaign_name = insight.campaign.name
+        created_insights.append(validated)
 
     db.commit()
     logger.info("Detected %d anomalies", len(created_insights))

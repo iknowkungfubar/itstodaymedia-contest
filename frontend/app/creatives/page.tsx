@@ -15,6 +15,7 @@ import { formatCurrency, formatPercent, formatRoas } from "@/lib/utils";
 export default function CreativesPage() {
   const [creatives, setCreatives] = useState<Creative[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<Map<number, CreativeAnalysisResult>>(
     new Map()
@@ -22,11 +23,13 @@ export default function CreativesPage() {
 
   async function load() {
     setLoading(true);
+    setError(null);
     try {
       const data = await fetchCreatives();
       setCreatives(data);
     } catch (err) {
       console.error("Failed to load creatives:", err);
+      setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -78,6 +81,19 @@ export default function CreativesPage() {
           {loading ? (
             <div className="flex h-64 items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            </div>
+          ) : error ? (
+            <div className="flex h-64 items-center justify-center">
+              <div className="text-center">
+                <p className="text-red-600">{error}</p>
+                <Button
+                  className="mt-4"
+                  variant="outline"
+                  onClick={() => load()}
+                >
+                  Retry
+                </Button>
+              </div>
             </div>
           ) : creatives.length === 0 ? (
             <div className="flex h-64 items-center justify-center text-sm text-gray-500">
