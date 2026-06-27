@@ -29,14 +29,10 @@ def list_landing_pages(
 @router.get("/{landing_page_id}", response_model=LandingPageResponse)
 def get_landing_page(landing_page_id: int, db: DbSession):
     """Get a single landing page by ID."""
-    lp = db.query(LandingPageModel).filter(
-        LandingPageModel.id == landing_page_id
-    ).first()
+    lp = db.query(LandingPageModel).filter(LandingPageModel.id == landing_page_id).first()
 
     if not lp:
-        raise HTTPException(
-            status_code=404, detail=f"Landing page {landing_page_id} not found"
-        )
+        raise HTTPException(status_code=404, detail=f"Landing page {landing_page_id} not found")
     return LandingPageResponse.model_validate(lp)
 
 

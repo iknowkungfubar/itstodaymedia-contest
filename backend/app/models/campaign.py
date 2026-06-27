@@ -37,9 +37,7 @@ class CampaignModel(Base):
     ctr: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
     start_date: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
     end_date: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime, server_default=func.now()
-    )
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now()
     )
@@ -50,9 +48,7 @@ class CampaignModel(Base):
     landing_pages = relationship(
         "LandingPageModel", back_populates="campaign", cascade="all, delete-orphan"
     )
-    insights = relationship(
-        "InsightModel", back_populates="campaign", cascade="all, delete-orphan"
-    )
+    insights = relationship("InsightModel", back_populates="campaign", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<Campaign {self.id}: {self.name} ({self.platform})>"

@@ -8,10 +8,13 @@ class TestCreatives:
 
     def setup_campaign(self, client: TestClient) -> int:
         """Helper to create a campaign and return its ID."""
-        resp = client.post("/api/campaigns", json={
-            "name": "Creative Test Campaign",
-            "platform": "meta",
-        })
+        resp = client.post(
+            "/api/campaigns",
+            json={
+                "name": "Creative Test Campaign",
+                "platform": "meta",
+            },
+        )
         return resp.json()["id"]
 
     def test_list_creatives_empty(self, client: TestClient) -> None:
@@ -41,25 +44,34 @@ class TestCreatives:
         campaign_id = self.setup_campaign(client)
 
         # Create two creatives
-        c1 = client.post("/api/creatives", json={
-            "campaign_id": campaign_id,
-            "platform": "meta",
-            "headline": "Get Your Free Guide Now",
-            "body": "Download the ultimate guide",
-            "cta": "Download Free",
-        }).json()
+        c1 = client.post(
+            "/api/creatives",
+            json={
+                "campaign_id": campaign_id,
+                "platform": "meta",
+                "headline": "Get Your Free Guide Now",
+                "body": "Download the ultimate guide",
+                "cta": "Download Free",
+            },
+        ).json()
 
-        c2 = client.post("/api/creatives", json={
-            "campaign_id": campaign_id,
-            "platform": "meta",
-            "headline": "Limited Time Offer",
-            "body": "Don't miss this exclusive deal",
-            "cta": "Shop Now",
-        }).json()
+        c2 = client.post(
+            "/api/creatives",
+            json={
+                "campaign_id": campaign_id,
+                "platform": "meta",
+                "headline": "Limited Time Offer",
+                "body": "Don't miss this exclusive deal",
+                "cta": "Shop Now",
+            },
+        ).json()
 
-        response = client.post("/api/creatives/analyze", json={
-            "creative_ids": [c1["id"], c2["id"]],
-        })
+        response = client.post(
+            "/api/creatives/analyze",
+            json={
+                "creative_ids": [c1["id"], c2["id"]],
+            },
+        )
         assert response.status_code == 200
         data = response.json()
         assert len(data) == 2

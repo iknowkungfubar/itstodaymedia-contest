@@ -65,8 +65,8 @@ Focus on what drives CPA/ROAS for email/SMS list building in affiliate marketing
 
             user_prompt = f"""Platform: {platform}
 Headline: {headline}
-Body: {body or '(none)'}
-CTA: {cta or '(none)'}"""
+Body: {body or "(none)"}
+CTA: {cta or "(none)"}"""
 
             response = self._client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -140,8 +140,20 @@ CTA: {cta or '(none)'}"""
         # CTA analysis
         if cta:
             action_words = [
-                "get", "try", "start", "join", "claim", "shop", "download",
-                "sign", "learn", "discover", "see", "find", "build", "create",
+                "get",
+                "try",
+                "start",
+                "join",
+                "claim",
+                "shop",
+                "download",
+                "sign",
+                "learn",
+                "discover",
+                "see",
+                "find",
+                "build",
+                "create",
             ]
             if any(word in cta.lower() for word in action_words):
                 score += 0.1
@@ -169,12 +181,14 @@ CTA: {cta or '(none)'}"""
             "recommendations": recommendations,
             "predicted_ctr": None,
             "predicted_conversion_rate": None,
-            "analysis_text": json.dumps({
-                "ai_score": score,
-                "strengths": strengths,
-                "weaknesses": weaknesses,
-                "recommendations": recommendations,
-            }),
+            "analysis_text": json.dumps(
+                {
+                    "ai_score": score,
+                    "strengths": strengths,
+                    "weaknesses": weaknesses,
+                    "recommendations": recommendations,
+                }
+            ),
         }
 
 

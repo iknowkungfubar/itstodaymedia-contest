@@ -44,12 +44,27 @@ class TestInsights:
     def test_list_with_filters(self, client: TestClient, db_session: Session) -> None:
         """GET /api/insights supports filtering."""
         insights = [
-            InsightModel(type="anomaly", severity="high", title="Anomaly 1",
-                         description="Desc", platform="meta"),
-            InsightModel(type="recommendation", severity="info", title="Rec 1",
-                         description="Desc", platform="google"),
-            InsightModel(type="insight", severity="low", title="Insight 1",
-                         description="Desc", platform="tiktok"),
+            InsightModel(
+                type="anomaly",
+                severity="high",
+                title="Anomaly 1",
+                description="Desc",
+                platform="meta",
+            ),
+            InsightModel(
+                type="recommendation",
+                severity="info",
+                title="Rec 1",
+                description="Desc",
+                platform="google",
+            ),
+            InsightModel(
+                type="insight",
+                severity="low",
+                title="Insight 1",
+                description="Desc",
+                platform="tiktok",
+            ),
         ]
         for ins in insights:
             db_session.add(ins)

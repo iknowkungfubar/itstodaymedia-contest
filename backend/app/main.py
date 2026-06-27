@@ -37,9 +37,7 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         content_length = request.headers.get("content-length")
         if content_length and int(content_length) > 1024 * 1024:  # 1 MB
-            return JSONResponse(
-                status_code=413, content={"detail": "Request too large"}
-            )
+            return JSONResponse(status_code=413, content={"detail": "Request too large"})
         return await call_next(request)
 
 

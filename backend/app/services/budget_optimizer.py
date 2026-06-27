@@ -28,9 +28,7 @@ class BudgetOptimizer:
         if settings.openai_api_key:
             self._client = OpenAI(api_key=settings.openai_api_key, timeout=30.0)
 
-    def get_recommendations(
-        self, db: Session, total_budget: float | None = None
-    ) -> dict[str, Any]:
+    def get_recommendations(self, db: Session, total_budget: float | None = None) -> dict[str, Any]:
         """Generate budget allocation recommendations across all campaigns."""
         campaigns = (
             db.query(CampaignModel)
@@ -50,9 +48,7 @@ class BudgetOptimizer:
             }
 
         # Calculate total current budget from daily budgets or spent
-        total_current = total_budget or sum(
-            float(c.daily_budget or 0) for c in campaigns
-        )
+        total_current = total_budget or sum(float(c.daily_budget or 0) for c in campaigns)
         if total_current == 0:
             total_current = sum(float(c.spent or 0) for c in campaigns)
         if total_current == 0:
@@ -182,9 +178,7 @@ class BudgetOptimizer:
             )
         return "No change recommended"
 
-    def _generate_summary(
-        self, recommendations: list[dict[str, Any]], _total_budget: float
-    ) -> str:
+    def _generate_summary(self, recommendations: list[dict[str, Any]], _total_budget: float) -> str:
         """Generate an executive summary of budget recommendations."""
         increases = [r for r in recommendations if r["change_amount"] > 0]
         decreases = [r for r in recommendations if r["change_amount"] < 0]

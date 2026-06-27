@@ -79,7 +79,13 @@ class MetaAdsMCPServer(BaseMCPServer):
                         },
                         "date_preset": {
                             "type": "string",
-                            "enum": ["today", "yesterday", "last_7d", "last_30d", "last_90d"],
+                            "enum": [
+                                "today",
+                                "yesterday",
+                                "last_7d",
+                                "last_30d",
+                                "last_90d",
+                            ],
                             "default": "last_30d",
                         },
                     },

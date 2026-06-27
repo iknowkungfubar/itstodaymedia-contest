@@ -21,9 +21,7 @@ class AdPlatformModel(Base):
     is_connected: Mapped[bool] = mapped_column(Boolean, default=False)
     credentials_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     last_sync_at: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime, server_default=func.now()
-    )
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now()
     )

@@ -41,9 +41,7 @@ class InsightModel(Base):
         Float, nullable=True, comment="Threshold that was breached"
     )
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime, server_default=func.now()
-    )
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
 
     campaign = relationship("CampaignModel", back_populates="insights")
 

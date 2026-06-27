@@ -29,9 +29,7 @@ class LandingPageModel(Base):
     roas: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
     bounce_rate: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
     avg_time_on_page: Mapped[Decimal | None] = mapped_column(Float, nullable=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime, server_default=func.now()
-    )
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now()
     )

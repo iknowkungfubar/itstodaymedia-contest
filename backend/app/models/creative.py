@@ -37,9 +37,7 @@ class CreativeModel(Base):
     strengths: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     weaknesses: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     recommendations: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime, server_default=func.now()
-    )
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
 
     campaign = relationship("CampaignModel", back_populates="creatives")
 

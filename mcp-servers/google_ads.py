@@ -178,8 +178,29 @@ class GoogleAdsMCPServer(BaseMCPServer):
     async def _handle_get_keywords(self, _args: dict[str, Any]) -> MCPResponse:
         """Return mock keyword performance data."""
         mock_keywords = [
-            {"keyword": "affiliate marketing", "impressions": 45000, "clicks": 2250, "ctr": 5.0, "cpc": 0.45, "conversions": 112},
-            {"keyword": "make money online", "impressions": 38000, "clicks": 1520, "ctr": 4.0, "cpc": 0.52, "conversions": 68},
-            {"keyword": "passive income", "impressions": 31000, "clicks": 1240, "ctr": 4.0, "cpc": 0.38, "conversions": 55},
+            {
+                "keyword": "affiliate marketing",
+                "impressions": 45000,
+                "clicks": 2250,
+                "ctr": 5.0,
+                "cpc": 0.45,
+                "conversions": 112,
+            },
+            {
+                "keyword": "make money online",
+                "impressions": 38000,
+                "clicks": 1520,
+                "ctr": 4.0,
+                "cpc": 0.52,
+                "conversions": 68,
+            },
+            {
+                "keyword": "passive income",
+                "impressions": 31000,
+                "clicks": 1240,
+                "ctr": 4.0,
+                "cpc": 0.38,
+                "conversions": 55,
+            },
         ]
         return MCPResponse(id="mock", result={"keywords": mock_keywords})

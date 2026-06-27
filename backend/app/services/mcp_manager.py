@@ -20,9 +20,7 @@ from app.config import settings
 # regular Python package, so we add its path to sys.path and import modules
 # by their bare name (same approach used inside the server files themselves).
 # backend/app/services/mcp_manager.py  → 3× parent = backend/  → 4× parent = project root
-_mcp_servers_dir = str(
-    Path(__file__).resolve().parent.parent.parent.parent / "mcp-servers"
-)
+_mcp_servers_dir = str(Path(__file__).resolve().parent.parent.parent.parent / "mcp-servers")
 if _mcp_servers_dir not in sys.path:
     sys.path.insert(0, _mcp_servers_dir)
 
@@ -64,8 +62,7 @@ class MCPServerManager:
         # corresponding environment variables.
         if not settings.meta_ads_access_token:
             logger.warning(
-                "META_ADS_ACCESS_TOKEN is not set — Meta Ads MCP server "
-                "will return mock data only"
+                "META_ADS_ACCESS_TOKEN is not set — Meta Ads MCP server will return mock data only"
             )
         meta = MetaAdsMCPServer(
             access_token=settings.meta_ads_access_token or "mock_token",

@@ -85,8 +85,7 @@ def scan_for_anomalies(request: Request, db: DbSession):  # noqa: ARG001
             .filter(
                 InsightModel.title == anomaly["title"],
                 InsightModel.campaign_id == anomaly["campaign_id"],
-                InsightModel.created_at
-                >= datetime.now(UTC) - timedelta(hours=24),  # Last 24 hours
+                InsightModel.created_at >= datetime.now(UTC) - timedelta(hours=24),  # Last 24 hours
             )
             .first()
         )

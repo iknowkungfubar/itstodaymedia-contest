@@ -160,9 +160,7 @@ async def mcp_sync(db: DbSession) -> dict[str, Any]:
 
         for camp_data in campaigns_data:
             try:
-                synced_count += _upsert_campaign(
-                    db, platform.platform_type, camp_data
-                )
+                synced_count += _upsert_campaign(db, platform.platform_type, camp_data)
             except Exception:
                 logger.exception("Failed to upsert campaign for %s", server_name)
 
