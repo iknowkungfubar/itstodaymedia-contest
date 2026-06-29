@@ -3,7 +3,6 @@ import type { PlatformBreakdown } from "@/lib/types";
 import {
   formatCompactNumber,
   formatCurrency,
-  getPlatformColor,
   getPlatformLabel,
 } from "@/lib/utils";
 
