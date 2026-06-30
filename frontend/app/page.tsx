@@ -52,8 +52,9 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount
+    /* eslint-disable react-hooks/set-state-in-effect */
     load();
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   if (loading) {
