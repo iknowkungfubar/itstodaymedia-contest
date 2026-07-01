@@ -60,7 +60,9 @@ export default function CampaignsPage() {
   }, [platform, status]);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     load();
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [load]);
 
   async function handleSync() {

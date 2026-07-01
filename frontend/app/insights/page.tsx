@@ -60,7 +60,9 @@ export default function InsightsPage() {
   }, [typeFilter, severityFilter]);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     load();
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [load]);
 
   async function handleScan() {
