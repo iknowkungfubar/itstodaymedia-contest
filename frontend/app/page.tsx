@@ -52,7 +52,27 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
+    const controller = new AbortController();
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const { data } = await supabase
+          .from("pages")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (!controller.signal.aborted) setPages(data || []);
+      } catch (err) {
+        if (!controller.signal.aborted)
+          setError(err instanceof Error ? err.message : "Failed to load data");
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
     load();
+    return () => controller.abort();
   }, []);
 
   if (loading) {
