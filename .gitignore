@@ -20,10 +20,6 @@ RULES.md
 .prompt.md
 .history/
 .session/
-CONTEXT.md
-SKILL.md
-MEMORY.md
-.hermes/
 
 # Dependencies
 node_modules/
