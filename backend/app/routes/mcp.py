@@ -145,7 +145,7 @@ async def mcp_sync(db: DbSession) -> dict[str, Any]:
                 )
         except Exception as exc:  # pragma: no cover
             logger.exception("MCP tool call failed for %s", server_name)
-            sync_results.append(_error_result(platform, str(exc)))
+            sync_results.append(_error_result(platform, "MCP server call failed"))
             continue
 
         if response.error:
