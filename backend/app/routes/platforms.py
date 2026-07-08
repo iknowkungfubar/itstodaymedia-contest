@@ -23,9 +23,7 @@ def list_platforms(db: DbSession):
 @router.post("/connect", response_model=PlatformResponse, status_code=201)
 def connect_platform(data: PlatformConnect, db: DbSession):
     """Connect a new ad platform."""
-    existing = db.query(AdPlatformModel).filter(
-        AdPlatformModel.name == data.name
-    ).first()
+    existing = db.query(AdPlatformModel).filter(AdPlatformModel.name == data.name).first()
 
     if existing:
         raise HTTPException(status_code=409, detail=f"Platform '{data.name}' already exists")
@@ -46,9 +44,7 @@ def connect_platform(data: PlatformConnect, db: DbSession):
 @router.delete("/{platform_id}", status_code=204)
 def disconnect_platform(platform_id: int, db: DbSession):
     """Disconnect an ad platform."""
-    platform = db.query(AdPlatformModel).filter(
-        AdPlatformModel.id == platform_id
-    ).first()
+    platform = db.query(AdPlatformModel).filter(AdPlatformModel.id == platform_id).first()
 
     if not platform:
         raise HTTPException(status_code=404, detail=f"Platform {platform_id} not found")

@@ -26,9 +26,7 @@ class PlatformSyncService:
 
     def sync_platform(self, platform_id: int, db: Session) -> dict[str, Any]:
         """Sync data from a connected platform."""
-        platform = db.query(AdPlatformModel).filter(
-            AdPlatformModel.id == platform_id
-        ).first()
+        platform = db.query(AdPlatformModel).filter(AdPlatformModel.id == platform_id).first()
 
         if not platform:
             return {
@@ -68,38 +66,45 @@ class PlatformSyncService:
 
         campaign_templates = [
             {
-                "name": platform_names.get(platform_type, platform_type)
-                + " - Brand Awareness Q3",
-                "roas": 4.2, "cpa": 8.50,
+                "name": platform_names.get(platform_type, platform_type) + " - Brand Awareness Q3",
+                "roas": 4.2,
+                "cpa": 8.50,
             },
             {
                 "name": platform_names.get(platform_type, platform_type)
                 + " - Retargeting - Warm Audiences",
-                "roas": 6.8, "cpa": 5.20,
+                "roas": 6.8,
+                "cpa": 5.20,
             },
             {
                 "name": platform_names.get(platform_type, platform_type)
                 + " - Lead Gen - Email List",
-                "roas": 3.5, "cpa": 12.00,
+                "roas": 3.5,
+                "cpa": 12.00,
             },
             {
-                "name": platform_names.get(platform_type, platform_type)
-                + " - SMS Signup Campaign",
-                "roas": 5.1, "cpa": 7.80,
+                "name": platform_names.get(platform_type, platform_type) + " - SMS Signup Campaign",
+                "roas": 5.1,
+                "cpa": 7.80,
             },
             {
                 "name": platform_names.get(platform_type, platform_type)
                 + " - Lookalike Audience Expansion",
-                "roas": 2.9, "cpa": 15.40,
+                "roas": 2.9,
+                "cpa": 15.40,
             },
         ]
 
         count = 0
-        for template in campaign_templates[:random.randint(2, 4)]:
-            existing = db.query(CampaignModel).filter(
-                CampaignModel.name == template["name"],
-                CampaignModel.platform == platform_type,
-            ).first()
+        for template in campaign_templates[: random.randint(2, 4)]:
+            existing = (
+                db.query(CampaignModel)
+                .filter(
+                    CampaignModel.name == template["name"],
+                    CampaignModel.platform == platform_type,
+                )
+                .first()
+            )
 
             if existing:
                 continue
@@ -170,7 +175,7 @@ class PlatformSyncService:
             },
         ]
 
-        for template in creative_templates[:random.randint(2, 4)]:
+        for template in creative_templates[: random.randint(2, 4)]:
             impressions = random.randint(10000, campaign.impressions)
             clicks = int(impressions * random.uniform(0.01, 0.06))
             conversions = int(clicks * random.uniform(0.02, 0.08))
@@ -207,7 +212,7 @@ class PlatformSyncService:
             "https://example.com/demo-request",
         ]
 
-        for url in urls[:random.randint(1, 3)]:
+        for url in urls[: random.randint(1, 3)]:
             visits = random.randint(500, campaign.clicks)
             conversions = int(visits * random.uniform(0.01, 0.1))
             revenue = float(campaign.revenue) * random.uniform(0.1, 0.4)
@@ -222,9 +227,9 @@ class PlatformSyncService:
                 conversion_rate=float(conversions / visits * 100) if visits > 0 else 0,
                 revenue=float(revenue),
                 cost=float(campaign.spent) * random.uniform(0.1, 0.4),
-                roas=float(
-                    revenue / (float(campaign.spent) * 0.3)
-                ) if float(campaign.spent) > 0 else 0,
+                roas=float(revenue / (float(campaign.spent) * 0.3))
+                if float(campaign.spent) > 0
+                else 0,
                 bounce_rate=random.uniform(0.2, 0.7),
                 avg_time_on_page=random.uniform(30, 300),
             )

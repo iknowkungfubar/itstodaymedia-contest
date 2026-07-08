@@ -34,12 +34,8 @@ class TestMCPServers:
             assert isinstance(s["resources"], list)
             assert isinstance(s["tools"], list)
             if s["name"] == "meta-ads":
-                assert any(
-                    r["uri"] == "meta-ads://campaigns" for r in s["resources"]
-                )
-                assert any(
-                    t["name"] == "list_campaigns" for t in s["tools"]
-                )
+                assert any(r["uri"] == "meta-ads://campaigns" for r in s["resources"])
+                assert any(t["name"] == "list_campaigns" for t in s["tools"])
 
 
 class TestMCPToolCall:
@@ -152,9 +148,7 @@ class TestMCPSync:
         data = response.json()
         assert data["sync_results"] == []
 
-    def test_sync_with_connected_platforms(
-        self, client: TestClient, db_session: Session
-    ) -> None:
+    def test_sync_with_connected_platforms(self, client: TestClient, db_session: Session) -> None:
         """POST /api/mcp/sync pulls campaigns from MCP servers into the DB."""
         from app.models.ad_platform import AdPlatformModel
         from app.models.campaign import CampaignModel
@@ -196,17 +190,13 @@ class TestMCPSync:
 
         # Verify the platform_campaign_id was stored
         meta_campaigns = (
-            db_session.query(CampaignModel)
-            .filter(CampaignModel.platform == "meta")
-            .all()
+            db_session.query(CampaignModel).filter(CampaignModel.platform == "meta").all()
         )
         assert len(meta_campaigns) == 3
         for c in meta_campaigns:
             assert c.platform_campaign_id is not None
 
-    def test_sync_is_idempotent(
-        self, client: TestClient, db_session: Session
-    ) -> None:
+    def test_sync_is_idempotent(self, client: TestClient, db_session: Session) -> None:
         """Calling sync twice does not create duplicate campaigns."""
         from app.models.ad_platform import AdPlatformModel
         from app.models.campaign import CampaignModel

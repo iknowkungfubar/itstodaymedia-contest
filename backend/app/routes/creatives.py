@@ -84,9 +84,7 @@ def delete_creative(creative_id: int, db: DbSession):
 @limiter.limit("10/minute")
 def analyze_creatives(request: Request, data: CreativeAnalysisRequest, db: DbSession):  # noqa: ARG001
     """Analyze creatives using AI for performance prediction."""
-    creatives = db.query(CreativeModel).filter(
-        CreativeModel.id.in_(data.creative_ids)
-    ).all()
+    creatives = db.query(CreativeModel).filter(CreativeModel.id.in_(data.creative_ids)).all()
 
     if not creatives:
         raise HTTPException(status_code=404, detail="No creatives found for the given IDs")

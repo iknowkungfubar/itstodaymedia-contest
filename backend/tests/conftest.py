@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session, sessionmaker
 TEST_DATABASE_URL = "sqlite:///./test_campaignpulse.db"
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 
+
 # ── Ensure test DB is cleaned up after all tests ──────────────────
 @pytest.fixture(scope="session", autouse=True)
 def _cleanup_test_db() -> Generator[None, None, None]:
@@ -25,6 +26,8 @@ def _cleanup_test_db() -> Generator[None, None, None]:
     db_path = TEST_DATABASE_URL.replace("sqlite:///./", "")
     if os.path.exists(db_path):
         os.remove(db_path)
+
+
 import app.main as _app_mod  # noqa: E402
 from app.database import get_db  # noqa: E402
 from app.models import Base  # noqa: E402

@@ -82,9 +82,8 @@ def get_campaign_summary(db: DbSession):
     total_spent = float(totals[4] or 0)
     total_revenue = float(totals[5] or 0)
     active = (
-        db.query(sa_func.count(CampaignModel.id))
-        .filter(CampaignModel.status == "active")
-        .scalar() or 0
+        db.query(sa_func.count(CampaignModel.id)).filter(CampaignModel.status == "active").scalar()
+        or 0
     )
 
     # ── Per-platform breakdown (single grouped query) ────────────────────
@@ -123,8 +122,7 @@ def get_campaign_summary(db: DbSession):
         "total_revenue": round(total_revenue, 2),
         "overall_roas": round(total_revenue / total_spent, 2) if total_spent > 0 else 0,
         "overall_ctr": (
-            round(total_clicks / total_impressions * 100, 2)
-            if total_impressions > 0 else 0
+            round(total_clicks / total_impressions * 100, 2) if total_impressions > 0 else 0
         ),
         "overall_cpa": round(total_spent / total_conversions, 2) if total_conversions > 0 else 0,
         "by_platform": by_platform,
@@ -191,9 +189,13 @@ def trigger_sync(db: DbSession):
     """
     from app.models.ad_platform import AdPlatformModel
 
-    platforms = db.query(AdPlatformModel).filter(
-        AdPlatformModel.is_connected == True  # noqa: E712
-    ).all()
+    platforms = (
+        db.query(AdPlatformModel)
+        .filter(
+            AdPlatformModel.is_connected == True  # noqa: E712
+        )
+        .all()
+    )
 
     results = []
     for platform in platforms:
