@@ -49,7 +49,7 @@ class TestAnomalyDetector:
             spent=Decimal("100.00"),
             impressions=0,
             cpa=Decimal("999.00"),  # Would also trigger CPA spike
-            roas=0.1,               # Would also trigger ROAS drop
+            roas=0.1,  # Would also trigger ROAS drop
         )
         db_session.add(campaign)
         db_session.commit()
@@ -65,12 +65,22 @@ class TestAnomalyDetector:
         """A campaign with CPA well above platform average triggers an anomaly."""
         # Seed campaigns to establish platform average CPA (~11)
         seed = CampaignModel(
-            name="Avg C1", platform="meta", status="active",
-            cpa=Decimal("10.00"), roas=2.0, conversions=10, spent=Decimal("100.00"),
+            name="Avg C1",
+            platform="meta",
+            status="active",
+            cpa=Decimal("10.00"),
+            roas=2.0,
+            conversions=10,
+            spent=Decimal("100.00"),
         )
         seed2 = CampaignModel(
-            name="Avg C2", platform="meta", status="active",
-            cpa=Decimal("12.00"), roas=2.0, conversions=10, spent=Decimal("120.00"),
+            name="Avg C2",
+            platform="meta",
+            status="active",
+            cpa=Decimal("12.00"),
+            roas=2.0,
+            conversions=10,
+            spent=Decimal("120.00"),
         )
         db_session.add_all([seed, seed2])
         db_session.commit()
@@ -101,8 +111,13 @@ class TestAnomalyDetector:
     def test_cpa_spike_medium_when_under_2x(self, db_session: Session) -> None:
         """CPA between 1.5x and 2.0x of average is 'medium' severity."""
         seed = CampaignModel(
-            name="Avg", platform="google", status="active",
-            cpa=Decimal("5.00"), roas=2.0, conversions=5, spent=Decimal("50.00"),
+            name="Avg",
+            platform="google",
+            status="active",
+            cpa=Decimal("5.00"),
+            roas=2.0,
+            conversions=5,
+            spent=Decimal("50.00"),
         )
         db_session.add(seed)
         db_session.commit()
@@ -131,12 +146,22 @@ class TestAnomalyDetector:
     def test_roas_decline_detected(self, db_session: Session) -> None:
         """A campaign with ROAS well below platform average triggers an anomaly."""
         seed = CampaignModel(
-            name="Avg ROAS", platform="meta", status="active",
-            roas=4.0, cpa=Decimal("5.00"), conversions=10, spent=Decimal("50.00"),
+            name="Avg ROAS",
+            platform="meta",
+            status="active",
+            roas=4.0,
+            cpa=Decimal("5.00"),
+            conversions=10,
+            spent=Decimal("50.00"),
         )
         seed2 = CampaignModel(
-            name="Good ROAS", platform="meta", status="active",
-            roas=5.0, cpa=Decimal("5.00"), conversions=10, spent=Decimal("50.00"),
+            name="Good ROAS",
+            platform="meta",
+            status="active",
+            roas=5.0,
+            cpa=Decimal("5.00"),
+            conversions=10,
+            spent=Decimal("50.00"),
         )
         db_session.add_all([seed, seed2])
         db_session.commit()
@@ -194,8 +219,13 @@ class TestAnomalyDetector:
     def test_healthy_campaign_no_anomalies(self, db_session: Session) -> None:
         """A well-performing campaign returns no findings."""
         seed = CampaignModel(
-            name="Avg", platform="meta", status="active",
-            cpa=Decimal("10.00"), roas=3.0, conversions=10, spent=Decimal("100.00"),
+            name="Avg",
+            platform="meta",
+            status="active",
+            cpa=Decimal("10.00"),
+            roas=3.0,
+            conversions=10,
+            spent=Decimal("100.00"),
         )
         db_session.add(seed)
         db_session.commit()
@@ -209,8 +239,8 @@ class TestAnomalyDetector:
             impressions=100000,
             clicks=5000,
             conversions=50,
-            cpa=Decimal("4.00"),        # Below average — no spike
-            roas=3.5,                     # In line with average — no drop
+            cpa=Decimal("4.00"),  # Below average — no spike
+            roas=3.5,  # In line with average — no drop
             revenue=Decimal("700.00"),
             start_date=datetime.now(UTC) - timedelta(days=5),
         )
@@ -225,12 +255,18 @@ class TestAnomalyDetector:
     def test_detect_anomalies_queries_active_only(self, db_session: Session) -> None:
         """detect_anomalies only checks campaigns with status 'active'."""
         paused = CampaignModel(
-            name="Paused", platform="meta", status="paused",
-            spent=Decimal("500.00"), impressions=0,  # Should trigger but is paused
+            name="Paused",
+            platform="meta",
+            status="paused",
+            spent=Decimal("500.00"),
+            impressions=0,  # Should trigger but is paused
         )
         active_bad = CampaignModel(
-            name="Active Bad", platform="meta", status="active",
-            spent=Decimal("100.00"), impressions=0,
+            name="Active Bad",
+            platform="meta",
+            status="active",
+            spent=Decimal("100.00"),
+            impressions=0,
         )
         db_session.add_all([paused, active_bad])
         db_session.commit()
@@ -245,7 +281,9 @@ class TestAnomalyDetector:
     def test_days_since_start_with_start_date(self, db_session: Session) -> None:  # noqa: ARG002, E501
         """_days_since_start returns days since campaign start_date."""
         campaign = CampaignModel(
-            name="Dated", platform="meta", status="active",
+            name="Dated",
+            platform="meta",
+            status="active",
             start_date=datetime.now(UTC) - timedelta(days=10),
         )
         detector = AnomalyDetector()
@@ -255,7 +293,9 @@ class TestAnomalyDetector:
     def test_days_since_start_without_date(self, db_session: Session) -> None:  # noqa: ARG002, E501
         """_days_since_start defaults to 7 when no start_date is set."""
         campaign = CampaignModel(
-            name="No Date", platform="meta", status="active",
+            name="No Date",
+            platform="meta",
+            status="active",
         )
         detector = AnomalyDetector()
         days = detector._days_since_start(campaign)
@@ -274,7 +314,8 @@ class TestAnomalyDetector:
             conversions=50,
             cpa=Decimal("64.00"),
             roas=2.0,
-            start_date=datetime.now(UTC) - timedelta(days=30),  # expected: $3000, actual: $3200 (just 6.7% over)  # noqa: E501
+            start_date=datetime.now(UTC)
+            - timedelta(days=30),  # expected: $3000, actual: $3200 (just 6.7% over)  # noqa: E501
         )
         db_session.add(campaign)
         db_session.commit()
@@ -288,4 +329,5 @@ class TestAnomalyDetector:
     def test_anomaly_detector_singleton_available(self) -> None:
         """The module-level singleton is importable and has expected type."""
         from app.services.anomaly_detector import anomaly_detector
+
         assert isinstance(anomaly_detector, AnomalyDetector)
