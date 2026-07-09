@@ -66,6 +66,7 @@ env/
 coverage/
 htmlcov/
 *.coverage.*
+coverage.xml
 .tox/
 uv.lock
 
