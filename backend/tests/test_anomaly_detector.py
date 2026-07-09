@@ -242,7 +242,7 @@ class TestAnomalyDetector:
         assert len(anomalies) == 1
         assert anomalies[0]["campaign_id"] == active_bad.id
 
-    def test_days_since_start_with_start_date(self, db_session: Session) -> None:
+    def test_days_since_start_with_start_date(self, db_session: Session) -> None:  # noqa: E501
         """_days_since_start returns days since campaign start_date."""
         campaign = CampaignModel(
             name="Dated", platform="meta", status="active",
@@ -252,7 +252,7 @@ class TestAnomalyDetector:
         days = detector._days_since_start(campaign)
         assert days == 10
 
-    def test_days_since_start_without_date(self, db_session: Session) -> None:
+    def test_days_since_start_without_date(self, db_session: Session) -> None:  # noqa: E501
         """_days_since_start defaults to 7 when no start_date is set."""
         campaign = CampaignModel(
             name="No Date", platform="meta", status="active",
@@ -274,7 +274,7 @@ class TestAnomalyDetector:
             conversions=50,
             cpa=Decimal("64.00"),
             roas=2.0,
-            start_date=datetime.now(UTC) - timedelta(days=30),  # expected: $3000, actual: $3200 (just 6.7% over)
+            start_date=datetime.now(UTC) - timedelta(days=30),  # expected: $3000, actual: $3200 (just 6.7% over)  # noqa: E501
         )
         db_session.add(campaign)
         db_session.commit()
