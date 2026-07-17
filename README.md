@@ -1,5 +1,8 @@
 # CampaignPulse — AI-Powered Campaign Intelligence
 
+[![CI](https://github.com/iknowkungfubar/itstodaymedia-contest/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/iknowkungfubar/itstodaymedia-contest/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/iknowkungfubar/itstodaymedia-contest/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/iknowkungfubar/itstodaymedia-contest/actions/workflows/codeql.yml)
+
 > **Built for It's Today Media — $5,000 Build Challenge**
 >
 > *"Don't just buy media. Own it."*
